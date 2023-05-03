@@ -1,6 +1,7 @@
 package com.github.linuxchina.markdownchatgpt.idea.run
 
 import com.github.linuxchina.markdownchatgpt.idea.chatGPTIcon
+import com.github.linuxchina.markdownchatgpt.idea.openAIIcon
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.lineMarker.RunLineMarkerProvider
@@ -27,19 +28,30 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
         if (fileName.endsWith(".gpt")) {
             if (psiElement is MarkdownHeader) {
                 if (psiElement.level == 1) {
-                    val functionName = psiElement.name!!
                     return LineMarkerInfo(
                         psiElement,
                         psiElement.textRange,
-                        icon,
+                        chatGPTIcon,
                         { _: PsiElement? ->
                             "Talk with ChatGPT"
                         },
                         { e, elt ->
-                            runDxTaskByRunAnything(psiElement.project, psiElement, functionName)
+                            runDxTaskByRunAnything(psiElement.project, psiElement)
                         },
                         GutterIconRenderer.Alignment.CENTER,
                         { "Talk with ChatGPT" }
+                    )
+                } else if (psiElement.level == 5 && (psiElement.name?.startsWith("ChatGPT") == true)) {
+                    return LineMarkerInfo(
+                        psiElement,
+                        psiElement.textRange,
+                        openAIIcon,
+                        { _: PsiElement? ->
+                            "Response from ChatGPT"
+                        },
+                        null,
+                        GutterIconRenderer.Alignment.CENTER,
+                        { "Response from ChatGPT" }
                     )
                 }
             }
@@ -47,10 +59,10 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
         return null
     }
 
-    private fun runDxTaskByRunAnything(project: Project, psiElement: PsiElement, taskName: String) {
+    private fun runDxTaskByRunAnything(project: Project, psiElement: MarkdownHeader) {
         RunAnythingCommandProvider.runCommand(
             psiElement.containingFile.virtualFile.parent,
-            "dx $taskName",
+            "dx xxx",
             DefaultRunExecutor.getRunExecutorInstance(),
             SimpleDataContext.getProjectContext(project)
         )
