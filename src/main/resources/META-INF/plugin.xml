@@ -1,18 +1,20 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.linuxchina.markdownchatgpt</id>
-    <name>markdown-chatgpt Template</name>
-    <vendor>linux-china</vendor>
+    <id>com.github.linuxchina.jetbrains.markdown_chatgpt</id>
+    <name>ChatGPT Talk from Markdown</name>
+    <vendor email="libing.chen@gmail.com">linux-china</vendor>
 
     <depends>com.intellij.modules.platform</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <dependencies>
+        <plugin id="org.intellij.plugins.markdown"/>
+    </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.linuxchina.markdownchatgpt.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <fileType name="Markdown" language="Markdown" extensions="gpt"/>
+        <fileIconProvider implementation="com.github.linuxchina.markdownchatgpt.idea.MarkdownGPTFileIconProvider"/>
+        <codeInsight.lineMarkerProvider language="Markdown"
+                                        implementationClass="com.github.linuxchina.markdownchatgpt.idea.run.ChatGPTRequestMarkerProvider"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.linuxchina.markdownchatgpt.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
-    </applicationListeners>
 </idea-plugin>
