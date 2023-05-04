@@ -22,7 +22,11 @@ import org.intellij.plugins.markdown.lang.psi.impl.MarkdownHeader
 import javax.swing.Icon
 
 class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
-    val client = OkHttpClient()
+    val client = OkHttpClient.Builder().apply {
+        this.connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        this.readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        this.writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+    }.build()
     val gson = com.google.gson.Gson()
 
     override fun getName(): String {
