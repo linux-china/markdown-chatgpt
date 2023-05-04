@@ -8,4 +8,4 @@
 
 ### Added
 
-- Initial release: Chat with GPT-3 in markdown!
+- Initial release: Talk with ChatGPT from Markdown.
