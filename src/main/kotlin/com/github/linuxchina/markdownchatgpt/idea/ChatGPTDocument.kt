@@ -9,8 +9,10 @@ class ChatGPTRequest {
     var mdText: String? = null
     var response: String? = null
     var source: PsiElement? = null
+    var responseContentOffset: Int = 0
+    var responseContentEndOffset: Int = 0
 
-     fun convertBodyToMessages(): List<Map<String, Any>> {
+    fun convertBodyToMessages(): List<Map<String, Any>> {
         val messages = mutableListOf<Map<String, Any>>()
         var userMsgContent = mdText!!
         //system message
@@ -63,23 +65,27 @@ class ChatGPTDocument(val root: PsiElement) {
             h1Offset = mdText.indexOf(headerText, h1Offset) + headerText.length
             var requestMdText = if (index < childrenOfH1.size - 1) {
                 val nextH1Text = childrenOfH1[index + 1].text
-                mdText.substring(h1Offset, mdText.indexOf(nextH1Text, h1Offset)).trim()
+                mdText.substring(h1Offset, mdText.indexOf(nextH1Text, h1Offset))
             } else {
-                mdText.substring(h1Offset).trim()
+                mdText.substring(h1Offset)
             }
-            val responseOffset = requestMdText.indexOf("\n##### ChatGPT")
+            val responseOffset = requestMdText.indexOf(chatGPTResponseMarker)
+            var responseContentOffset = 0
+            val responseContentEndOffset = requestMdText.length
             if (responseOffset > 0) {
-                val responseContentOffset = requestMdText.indexOf('\n', responseOffset + 3)
+                responseContentOffset = requestMdText.indexOf('\n', responseOffset + 3)
                 if (responseContentOffset > 0) {
-                    response = requestMdText.substring(responseContentOffset).trim()
+                    response = requestMdText.substring(responseContentOffset)
                 }
-                requestMdText = requestMdText.substring(responseOffset).trim()
+                requestMdText = requestMdText.substring(responseOffset)
             }
             requests[markdownHeader] = ChatGPTRequest().apply {
                 this.title = title
-                this.mdText = requestMdText
+                this.mdText = requestMdText.trim()
                 this.response = response
                 this.source = markdownHeader
+                this.responseContentOffset = responseContentOffset
+                this.responseContentEndOffset = responseContentEndOffset
             }
         }
     }
