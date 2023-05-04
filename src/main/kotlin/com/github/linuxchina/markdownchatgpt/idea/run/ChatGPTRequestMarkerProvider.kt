@@ -1,19 +1,19 @@
 package com.github.linuxchina.markdownchatgpt.idea.run
 
-import com.github.linuxchina.markdownchatgpt.idea.ChatGPTDocument
-import com.github.linuxchina.markdownchatgpt.idea.chatGPTIcon
-import com.github.linuxchina.markdownchatgpt.idea.chatGPTResponseMarker
-import com.github.linuxchina.markdownchatgpt.idea.openAIIcon
+import com.github.linuxchina.markdownchatgpt.idea.*
 import com.github.linuxchina.markdownchatgpt.model.ChatCompletionRequest
 import com.github.linuxchina.markdownchatgpt.model.ChatCompletionResponse
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.execution.lineMarker.RunLineMarkerProvider
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -73,33 +73,62 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
     }
 
     private fun callChatGPT(project: Project, psiElement: MarkdownHeader) {
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("ChatGPT Notification Group")
-            .createNotification("Send requests to OpenAI", NotificationType.IDE_UPDATE)
-            .notify(project)
-        val openAIToken = System.getenv("OPENAI_API_KEY")
-        val chatRequest = ChatCompletionRequest.of("What's java")
+        val chatGPTDocument = ChatGPTDocument(psiElement.parent)
+        val openAISettings = chatGPTDocument.getFrontMatter()
+        val mdChatRequest = chatGPTDocument.findRequest(psiElement)!!
+        displayTextInBar(project, "Sending request to OpenAI")
+        val openAIToken = openAISettings.getOpenAIToken()
+        if (openAIToken.isNullOrEmpty()) {
+            popupErrorBalloon(project, "OpenAI token is empty. Please set it in the front matter.")
+            return
+        }
+        val chatRequest = ChatCompletionRequest()
+        chatRequest.model = openAISettings.model
+        chatRequest.temperature = openAISettings.temperature
+        chatRequest.n = openAISettings.n
+        chatRequest.messages = mdChatRequest.convertBodyToMessages()
         val request = Request.Builder()
-            .url("https://api.openai.com/v1/chat/completions")
+            .url(openAISettings.url)
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer $openAIToken")
             .post(RequestBody.create(MediaType.get("application/json"), gson.toJson(chatRequest)))
             .build()
-        ApplicationManager.getApplication().runWriteAction {
-            client.newCall(request).execute().use { response ->
-                if (response.isSuccessful) {
-                    val chatResponse = gson.fromJson(response.body()!!.string(), ChatCompletionResponse::class.java)
-                    val reply = chatResponse.choices[0]?.message?.content ?: ""
-                    updateChatGPTResponse(project, psiElement, reply)
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Sending request to OpenAI") {
+            var reply = ""
+            var startedAt = System.currentTimeMillis()
+            override fun run(indicator: ProgressIndicator) {
+                try {
+                    client.newCall(request).execute().use { response ->
+                        if (response.isSuccessful) {
+                            val chatResponse =
+                                gson.fromJson(response.body()!!.string(), ChatCompletionResponse::class.java)
+                            reply = chatResponse.choices[0]?.message?.content ?: ""
+                        } else {
+                            popupErrorBalloon(project, "Failed to talk to ChatGPT. Response code: ${response.code()}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    popupErrorBalloon(project, "Failed to talk to ChatGPT. Stacktrace: ${e.message}")
                 }
             }
-        }
+
+            override fun onSuccess() {
+                WriteCommandAction.writeCommandAction(project, psiElement.containingFile).run<Exception> {
+                    updateChatGPTResponse(project, psiElement, mdChatRequest, reply)
+                }
+                val duration = System.currentTimeMillis() - startedAt
+                displayTextInBar(project, "ChatGPT query finished, execution time: $duration ms")
+            }
+        })
 
     }
 
-    private fun updateChatGPTResponse(project: Project, psiElement: MarkdownHeader, reply: String) {
-        val chatGPTDocument = ChatGPTDocument(psiElement.parent)
-        val request = chatGPTDocument.findRequest(psiElement)!!
+    private fun updateChatGPTResponse(
+        project: Project,
+        psiElement: MarkdownHeader,
+        request: ChatGPTRequest,
+        reply: String
+    ) {
         val chatGPTReply = "\n\n${reply.trim()}\n\n"
         val documentManager = PsiDocumentManager.getInstance(project)
         val document = documentManager.getDocument(psiElement.containingFile)!!
@@ -118,19 +147,30 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
         } else {
             val startOffset =
                 psiElement.textRange.startOffset + psiElement.text.length + request.responseContentEndOffset
-            val endOffset =
-                psiElement.textRange.startOffset + psiElement.text.length + request.responseContentEndOffset
-            document.replaceString(
+            document.insertString(
                 startOffset,
-                endOffset,
                 "${chatGPTResponseMarker}${chatGPTReply}"
             )
             caretOffset = startOffset + chatGPTResponseMarker.length + 1
         }
-        FileEditorManager.getInstance(project).selectedEditor?.let {
+        FileEditorManager.getInstance(project).getEditors(psiElement.containingFile.virtualFile).forEach {
             if (it is TextEditor) {
                 it.editor.caretModel.moveToOffset(caretOffset + 1)
             }
         }
+    }
+
+    private fun displayTextInBar(project: Project, text: String) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("ChatGPT Info Group")
+            .createNotification(text, NotificationType.INFORMATION)
+            .notify(project)
+    }
+
+    private fun popupErrorBalloon(project: Project, text: String) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("ChatGPT Notification Group")
+            .createNotification(text, NotificationType.ERROR)
+            .notify(project)
     }
 }
