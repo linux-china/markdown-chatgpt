@@ -16,7 +16,7 @@
         <codeInsight.lineMarkerProvider language="Markdown"
                                         implementationClass="com.github.linuxchina.markdownchatgpt.idea.run.ChatGPTRequestMarkerProvider"/>
         <notificationGroup id="ChatGPT Notification Group"
-                           displayType="TOOL_WINDOW"
+                           displayType="NONE"
                            isLogByDefault="false"/>
     </extensions>
 
