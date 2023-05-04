@@ -1,8 +1,22 @@
 package com.github.linuxchina.markdownchatgpt.idea
 
+import com.github.linuxchina.markdownchatgpt.model.ChatMessage
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.childrenOfType
 import org.intellij.plugins.markdown.lang.psi.impl.MarkdownHeader
+import org.yaml.snakeyaml.Yaml
+
+class OpenAISettings {
+    var model = "gpt-3.5-turbo"
+    var temperature = 1.0
+    var n = 1
+    var url = "https://api.openai.com/v1/chat/completions"
+    var openai_api_key: String? = null
+
+    fun getOpenAIToken(): String? {
+        return openai_api_key ?: System.getenv("OPENAI_API_KEY")
+    }
+}
 
 class ChatGPTRequest {
     var title: String? = null
@@ -12,8 +26,8 @@ class ChatGPTRequest {
     var responseContentOffset: Int = 0
     var responseContentEndOffset: Int = 0
 
-    fun convertBodyToMessages(): List<Map<String, Any>> {
-        val messages = mutableListOf<Map<String, Any>>()
+    fun convertBodyToMessages(): List<ChatMessage> {
+        val messages = mutableListOf<ChatMessage>()
         var userMsgContent = mdText!!
         //system message
         val systemMsgPattern = Regex("(\\S.+\\n)*.+\\{\\.system}")
@@ -22,20 +36,20 @@ class ChatGPTRequest {
                 val matchedText = group.value
                 userMsgContent = userMsgContent.replace(matchedText, "").trim()
                 val systemMsgContent = matchedText.replace("{.system}", "").trim()
-                messages.add(mapOf("role" to "system", "content" to systemMsgContent))
+                messages.add(ChatMessage.systemMessage(systemMsgContent))
             }
         }
         //assistant messages
-        val assistantMessages = mutableListOf<Map<String, Any>>()
+        val assistantMessages = mutableListOf<ChatMessage>()
         val assistantMsgPattern = Regex("(\\S.+\\n)*.+\\{\\.assistant}")
         assistantMsgPattern.findAll(userMsgContent).forEach {
             val matchedText = it.value
             userMsgContent = userMsgContent.replace(matchedText, "").trim()
             val assistantMsgContent = matchedText.replace("{.assistant}", "").trim()
-            assistantMessages.add(mapOf("role" to "assistant", "content" to assistantMsgContent))
+            assistantMessages.add(ChatMessage.assistantMessage(assistantMsgContent))
         }
         // user message
-        messages.add(mapOf("role" to "user", "content" to userMsgContent))
+        messages.add(ChatMessage.userMessage(userMsgContent))
         // append assistant messages
         if (assistantMessages.isNotEmpty()) {
             messages.addAll(assistantMessages)
@@ -77,7 +91,7 @@ class ChatGPTDocument(val root: PsiElement) {
                 if (responseContentOffset > 0) {
                     response = requestMdText.substring(responseContentOffset)
                 }
-                requestMdText = requestMdText.substring(responseOffset)
+                requestMdText = requestMdText.substring(0, responseOffset)
             }
             requests[markdownHeader] = ChatGPTRequest().apply {
                 this.title = title
@@ -92,5 +106,15 @@ class ChatGPTDocument(val root: PsiElement) {
 
     fun findRequest(h1: MarkdownHeader): ChatGPTRequest? {
         return requests[h1]
+    }
+
+    fun getFrontMatter(): OpenAISettings {
+        if (!frontMatter.isNullOrEmpty()) {
+            try {
+                return Yaml().loadAs(frontMatter, OpenAISettings::class.java)
+            } catch (ignore: Exception) {
+            }
+        }
+        return OpenAISettings()
     }
 }
