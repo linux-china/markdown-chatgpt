@@ -15,6 +15,9 @@
         <fileIconProvider implementation="com.github.linuxchina.markdownchatgpt.idea.MarkdownGPTFileIconProvider"/>
         <codeInsight.lineMarkerProvider language="Markdown"
                                         implementationClass="com.github.linuxchina.markdownchatgpt.idea.run.ChatGPTRequestMarkerProvider"/>
+        <notificationGroup id="ChatGPT Notification Group"
+                           displayType="TOOL_WINDOW"
+                           isLogByDefault="false"/>
     </extensions>
 
 </idea-plugin>
