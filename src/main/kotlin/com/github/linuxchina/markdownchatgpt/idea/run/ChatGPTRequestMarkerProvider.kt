@@ -17,10 +17,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
-import okhttp3.MediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.*
 import org.intellij.plugins.markdown.lang.psi.impl.MarkdownHeader
 import javax.swing.Icon
 
@@ -94,11 +91,13 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
             .post(RequestBody.create(MediaType.get("application/json"), gson.toJson(chatRequest)))
             .build()
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Sending request to OpenAI") {
-            var reply = ""
+            var reply: String? = null
             var startedAt = System.currentTimeMillis()
+            var httpCall: Call? = null
             override fun run(indicator: ProgressIndicator) {
                 try {
-                    client.newCall(request).execute().use { response ->
+                    httpCall = client.newCall(request)
+                    httpCall!!.execute().use { response ->
                         if (response.isSuccessful) {
                             val chatResponse =
                                 gson.fromJson(response.body()!!.string(), ChatCompletionResponse::class.java)
@@ -113,11 +112,17 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
             }
 
             override fun onSuccess() {
-                WriteCommandAction.writeCommandAction(project, psiElement.containingFile).run<Exception> {
-                    updateChatGPTResponse(project, psiElement, mdChatRequest, reply)
+                if (!reply.isNullOrEmpty()) {
+                    WriteCommandAction.writeCommandAction(project, psiElement.containingFile).run<Exception> {
+                        updateChatGPTResponse(project, psiElement, mdChatRequest, reply!!)
+                    }
+                    val duration = System.currentTimeMillis() - startedAt
+                    displayTextInBar(project, "ChatGPT query finished, execution time: $duration ms")
                 }
-                val duration = System.currentTimeMillis() - startedAt
-                displayTextInBar(project, "ChatGPT query finished, execution time: $duration ms")
+            }
+
+            override fun onCancel() {
+                httpCall?.cancel()
             }
         })
 
