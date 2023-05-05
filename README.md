@@ -1,4 +1,4 @@
-Markdown ChatGPT
+ChatGPT with Markdown
 ==================
 
 Talk with ChatGPT from Markdown.
@@ -8,7 +8,7 @@ Talk with ChatGPT from Markdown.
 ![ChatGPT Markdown File](docs/images/gpt-file-split.png)
 
 <!-- Plugin description -->
-Markdown-ChatGPT is a JetBrains IDE plugin to help you talk with ChatGPT from markdown.
+ChatGPT with Markdown is a JetBrains IDE plugin to help you talk with ChatGPT from Markdown file.
 
 Features:
 
@@ -23,7 +23,7 @@ Features:
 
 - Using IDE built-in plugin system:
   
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "markdown-chatgpt"</kbd> >
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "ChatGPT with Markdown"</kbd> >
   <kbd>Install Plugin</kbd>
   
 - Manually:
