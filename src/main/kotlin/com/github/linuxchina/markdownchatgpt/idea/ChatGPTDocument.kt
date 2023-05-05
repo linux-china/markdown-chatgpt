@@ -14,7 +14,11 @@ class OpenAISettings {
     var openaiApiKey: String? = null
 
     fun getOpenAIToken(): String? {
-        return openaiApiKey ?: System.getenv("OPENAI_API_KEY")
+        return if (openaiApiKey != null && openaiApiKey!!.length > 10) {
+            openaiApiKey
+        } else {
+            System.getenv("OPENAI_API_KEY")
+        }
     }
 }
 
@@ -128,7 +132,7 @@ class ChatGPTDocument(val root: PsiElement) {
                     return settings
                 }
             } catch (ignore: Exception) {
-               
+
             }
         }
         return OpenAISettings()
