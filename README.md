@@ -77,6 +77,10 @@ openai_api_key: xxxx
 # Basic Java
 
 What's Java?
+
+# Basic Kotlin
+
+What's Kotlin?
 ```
 
 # Features:
