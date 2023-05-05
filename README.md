@@ -37,7 +37,12 @@ public class UserService {
 <!-- Plugin description -->
 ChatGPT with Markdown is a JetBrains IDE plugin to help you talk with ChatGPT from Markdown file.
 
-Features:
+# Get started
+
+Create a file with `.gpt` extension, and create `# xx` h1 title for ChatGPT query.
+Input your prompt after h1, and finally click run button in the gutter to run ChatGPT query.
+
+# Features:
 
 * Standard Markdown format for ChatGPT
 * Make a talk from Markdown
@@ -49,11 +54,12 @@ Features:
 ## Installation
 
 - Using IDE built-in plugin system:
-  
+
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "ChatGPT with Markdown"</kbd> >
   <kbd>Install Plugin</kbd>
-  
+
 - Manually:
 
-  Download the [latest release](https://github.com/linux-china/markdown-chatgpt/releases/latest) and install it manually using
+  Download the [latest release](https://github.com/linux-china/markdown-chatgpt/releases/latest) and install it manually
+  using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
