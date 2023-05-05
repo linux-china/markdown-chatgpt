@@ -5,7 +5,34 @@ Talk with ChatGPT from Markdown.
 
 ![ChatGPT Markdown File](docs/images/gpt-file.png)
 
+Editor split support: one for prompt, another for response.
+
 ![ChatGPT Markdown File](docs/images/gpt-file-split.png)
+
+`system` and `assistant` messages support, please add `{.system}` or `{.assistant}` after paragraph.
+
+~~~markdown
+# Generation unit test
+
+You are a Java programmer, and you are developing a Spring Boot application.
+The tech stack is Java 17, Spring Boot 3.0, JUnit 5 , Spring Boot Test, AssertJ etc. {.system}
+
+Please write unit test with Spring Boot Test for the below code:
+
+```java 
+           
+package org.mvnsearch.service;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class UserService {
+    public User findNickById(long id) {
+        return "Jackie";
+    }
+}
+``` 
+~~~
 
 <!-- Plugin description -->
 ChatGPT with Markdown is a JetBrains IDE plugin to help you talk with ChatGPT from Markdown file.
