@@ -75,7 +75,8 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
     }
 
     private fun callChatGPT(project: Project, psiElement: MarkdownHeader) {
-        val chatGPTDocument = ChatGPTDocument(psiElement.parent)
+        val root = psiElement.parent
+        val chatGPTDocument = ChatGPTDocument(root)
         val openAISettings = chatGPTDocument.getFrontMatter()
         val mdChatRequest = chatGPTDocument.findRequest(psiElement)!!
         displayTextInBar(project, "Sending request to OpenAI")
@@ -85,6 +86,8 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                 project,
                 "OpenAI token is empty. Please set it in the front matter, such as `openai_api_key: xxx`"
             )
+            // fill/modify openai_api_key in front matter
+            chatGPTDocument.insertOpenAIToken()
             return
         }
         val chatRequest = ChatCompletionRequest()
