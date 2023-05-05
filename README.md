@@ -15,6 +15,7 @@ Features:
 * Standard Markdown format for ChatGPT
 * Make a talk from Markdown
 * Support to load OpenAI token from environment variable `OPENAI_API_KEY`
+* Editor split support: one for prompt, another for response
 
 <!-- Plugin description end -->
 
