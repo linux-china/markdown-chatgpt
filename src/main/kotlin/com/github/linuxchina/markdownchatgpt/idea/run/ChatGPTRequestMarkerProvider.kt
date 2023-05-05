@@ -8,6 +8,7 @@ import com.intellij.execution.lineMarker.RunLineMarkerProvider
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
@@ -45,7 +46,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                     return LineMarkerInfo(
                         psiElement,
                         psiElement.textRange,
-                        chatGPTIcon,
+                        sendRequestIcon,
                         { _: PsiElement? ->
                             "Talk with ChatGPT"
                         },
@@ -59,7 +60,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                     return LineMarkerInfo(
                         psiElement,
                         psiElement.textRange,
-                        openAIIcon,
+                        chatGPTIcon,
                         { _: PsiElement? ->
                             "Response from ChatGPT"
                         },
@@ -162,9 +163,12 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
             )
             caretOffset = startOffset + chatGPTResponseMarker.length + 1
         }
-        FileEditorManager.getInstance(project).getEditors(psiElement.containingFile.virtualFile).forEach {
-            if (it is TextEditor) {
-                it.editor.caretModel.moveToOffset(caretOffset + 1)
+        val fileEditors = FileEditorManager.getInstance(project).getAllEditors(psiElement.containingFile.virtualFile)
+        if (fileEditors.isNotEmpty()) {
+            val lastEditor = fileEditors.last()
+            if (lastEditor is TextEditor) {
+                lastEditor.editor.caretModel.moveToOffset(caretOffset + 2)
+                lastEditor.editor.scrollingModel.scrollToCaret(ScrollType.CENTER)
             }
         }
     }
