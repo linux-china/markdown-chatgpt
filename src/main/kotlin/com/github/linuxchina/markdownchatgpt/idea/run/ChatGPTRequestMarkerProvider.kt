@@ -81,7 +81,10 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
         displayTextInBar(project, "Sending request to OpenAI")
         val openAIToken = openAISettings.getOpenAIToken()
         if (openAIToken.isNullOrEmpty()) {
-            popupErrorBalloon(project, "OpenAI token is empty. Please set it in the front matter.")
+            popupErrorBalloon(
+                project,
+                "OpenAI token is empty. Please set it in the front matter, such as `openai_api_key: xxx`"
+            )
             return
         }
         val chatRequest = ChatCompletionRequest()
