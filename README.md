@@ -66,13 +66,23 @@ ChatGPT with Markdown is a JetBrains IDE plugin to help you talk with ChatGPT fr
 
 # Get started
 
-Create a file with `.gpt` extension, and create `# xx` h1 title for ChatGPT query.
-Input your prompt after h1, and finally click run button in the gutter to run ChatGPT query.
+Create a file with `.gpt` extension, such as `demo.gpt`. Copy following code and paste in `demo.gpt` file,
+and change `openai_api_key` to your own key. Click run button in the gutter to run ChatGPT query.
+
+```markdown
+---
+openai_api_key: xxxx
+---
+
+# Basic Java
+
+What's Java?
+```
 
 # Features:
 
-* Standard Markdown format for ChatGPT
-* Make a talk from Markdown
+* Standard Markdown format for ChatGPT: h1 is query name, and paragraph is query prompt.
+* Make a talk from Markdown: Click run button in the gutter to run ChatGPT query.
 * Support to load OpenAI token from environment variable `OPENAI_API_KEY`
 * Editor split support: one for prompt, another for response
 
