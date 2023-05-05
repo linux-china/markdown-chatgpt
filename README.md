@@ -15,7 +15,7 @@ ChatGPT with Markdown is a JetBrains IDE plugin to help you talk with ChatGPT fr
 openai_api_key: xxxx
 ---
 
-# Basic Java
+# Explain Java
 
 What's Java?
 
@@ -74,11 +74,11 @@ and change `openai_api_key` to your own key. Click run button in the gutter to r
 openai_api_key: xxxx
 ---
 
-# Basic Java
+# Explain Java
 
 What's Java language?
 
-# Basic Kotlin
+# Explain Kotlin
 
 What's Kotlin language?
 ```
