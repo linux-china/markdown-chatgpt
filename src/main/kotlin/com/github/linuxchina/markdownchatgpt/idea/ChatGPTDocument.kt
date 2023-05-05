@@ -1,6 +1,11 @@
 package com.github.linuxchina.markdownchatgpt.idea
 
 import com.github.linuxchina.markdownchatgpt.model.ChatMessage
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.childrenOfType
 import org.intellij.plugins.markdown.lang.psi.impl.MarkdownHeader
@@ -136,5 +141,43 @@ class ChatGPTDocument(val root: PsiElement) {
             }
         }
         return OpenAISettings()
+    }
+
+    fun insertOpenAIToken() {
+        val project = root.project
+        val mdText = root.text
+        var caretOffset = 0
+        if (!mdText.contains("\nopenai_api_key:")) {
+            WriteCommandAction.runWriteCommandAction(project) {
+                val document = PsiDocumentManager.getInstance(project).getDocument(root.containingFile)
+                if (document != null) {
+                    if (mdText.startsWith("---")) {
+                        val offset = mdText.indexOf("\n---", 3)
+                        if (offset > 0) {
+                            val content = "\nopenai_api_key: xxx"
+                            document.insertString(offset, content)
+                            caretOffset = offset + content.length
+                        }
+                    } else {
+                        val content = "---\nopenai_api_key: xxx\n---\n\n"
+                        document.insertString(0, content)
+                        caretOffset = content.length - 6
+                    }
+                }
+            }
+        } else {
+            caretOffset = mdText.indexOf("openai_api_key:") + 16
+        }
+        if (caretOffset > 0) {
+            val fileEditors =
+                FileEditorManager.getInstance(project).getAllEditors(root.containingFile.virtualFile)
+            if (fileEditors.isNotEmpty()) {
+                val lastEditor = fileEditors.last()
+                if (lastEditor is TextEditor) {
+                    lastEditor.editor.caretModel.moveToOffset(caretOffset)
+                    lastEditor.editor.scrollingModel.scrollToCaret(ScrollType.CENTER)
+                }
+            }
+        }
     }
 }
