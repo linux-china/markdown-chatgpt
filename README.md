@@ -1,15 +1,42 @@
 ChatGPT with Markdown
-==================
+======================
 
-Talk with ChatGPT from Markdown.
+ChatGPT with Markdown is a JetBrains IDE plugin to help you talk with ChatGPT from Markdown file.
+
+# Get started
+
+* Install plugin from IDE plugin manager
+  or [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/21671-chatgpt-with-markdown)
+* Create a file with `.gpt` extension, such as `demo.gpt`
+* Copy following code and paste in `demo.gpt` file, and change `openai_api_key` to your own key.
+
+~~~markdown
+---
+openai_api_key: xxxx
+---
+
+# Basic Java
+
+What's Java?
+
+# Generation JUnit 5 unit test
+
+Please give me an example of JUnit 5 unit test.
+~~~
+
+* Click run button in the gutter to run ChatGPT query.
+
+# Features
+
+### Talk with ChatGPT from Markdown.
 
 ![ChatGPT Markdown File](docs/images/gpt-file.png)
 
-Editor split support: one for prompt, another for response.
+### Editor split support: one for prompt, another for response.
 
 ![ChatGPT Markdown File](docs/images/gpt-file-split.png)
 
-`system` and `assistant` messages support, please add `{.system}` or `{.assistant}` after paragraph.
+### `system` and `assistant` messages support, please add `{.system}` or `{.assistant}` after paragraph.
 
 ~~~markdown
 # Generation unit test
