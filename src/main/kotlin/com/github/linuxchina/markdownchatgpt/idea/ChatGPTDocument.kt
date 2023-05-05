@@ -11,10 +11,10 @@ class OpenAISettings {
     var temperature = 1.0
     var n = 1
     var url = "https://api.openai.com/v1/chat/completions"
-    var openai_api_key: String? = null
+    var openaiApiKey: String? = null
 
     fun getOpenAIToken(): String? {
-        return openai_api_key ?: System.getenv("OPENAI_API_KEY")
+        return openaiApiKey ?: System.getenv("OPENAI_API_KEY")
     }
 }
 
@@ -111,8 +111,24 @@ class ChatGPTDocument(val root: PsiElement) {
     fun getFrontMatter(): OpenAISettings {
         if (!frontMatter.isNullOrEmpty()) {
             try {
-                return Yaml().loadAs(frontMatter, OpenAISettings::class.java)
+                Yaml().loadAs(frontMatter, Map::class.java)?.let {
+                    val settings = OpenAISettings()
+                    settings.model = it["model"] as? String ?: "gpt-3.5-turbo"
+                    settings.temperature = it["temperature"] as? Double ?: 1.0
+                    settings.n = it["n"] as? Int ?: 1
+                    if (it.contains("openai_api_key")) {
+                        settings.openaiApiKey = it["openai_api_key"] as? String
+                    } else if (it.contains("openai-api-key")) {
+                        settings.openaiApiKey = it["openai-api-key"] as? String
+                    } else if (it.contains("OPENAI_API_KEY")) {
+                        settings.openaiApiKey = it["OPENAI_API_KEY"] as? String
+                    } else if (it.contains("OPENAI-API-KEY")) {
+                        settings.openaiApiKey = it["OPENAI-API-KEY"] as? String
+                    }
+                    return settings
+                }
             } catch (ignore: Exception) {
+               
             }
         }
         return OpenAISettings()
