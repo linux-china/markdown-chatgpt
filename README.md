@@ -1,7 +1,7 @@
 Markdown ChatGPT
 ==================
 
-Talk with ChatGPT from Markdown.   
+Talk with ChatGPT from Markdown.
 
 ![ChatGPT Markdown File](docs/images/gpt-file.png)
 
@@ -11,9 +11,10 @@ Talk with ChatGPT from Markdown.
 Markdown-ChatGPT is a JetBrains IDE plugin to help you talk with ChatGPT from markdown.
 
 Features:
-                           
-* Standard Markdown format
+
+* Standard Markdown format for ChatGPT
 * Make a talk from Markdown
+* Support to load OpenAI token from environment variable `OPENAI_API_KEY`
 
 <!-- Plugin description end -->
 
