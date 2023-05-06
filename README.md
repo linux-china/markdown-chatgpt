@@ -28,6 +28,10 @@ Please give me an example of JUnit 5 unit test.
 
 # Features
 
+### ChatGPT Markdown format
+
+![ChatGPT Markdown Format](docs/images/chargpt-markdown-format.png)
+
 ### Talk with ChatGPT from Markdown.
 
 ![ChatGPT Markdown File](docs/images/gpt-file.png)
