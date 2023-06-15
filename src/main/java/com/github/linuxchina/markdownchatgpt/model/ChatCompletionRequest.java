@@ -1,6 +1,8 @@
 package com.github.linuxchina.markdownchatgpt.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.intellij.util.Functions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,6 +14,8 @@ public class ChatCompletionRequest {
     private String model = "gpt-3.5-turbo";
     private double temperature = 1;
     private Integer n = 1;
+    @JsonRawValue
+    private String functions;
     private List<ChatMessage> messages;
 
     public ChatCompletionRequest() {
@@ -49,6 +53,14 @@ public class ChatCompletionRequest {
         this.messages = messages;
     }
 
+    public String getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(String functions) {
+        this.functions = functions;
+    }
+
     public static ChatCompletionRequest of(@NotNull String userMessage) {
         return of(null, userMessage, null);
     }
@@ -71,4 +83,5 @@ public class ChatCompletionRequest {
         }
         this.messages.add(message);
     }
+
 }
