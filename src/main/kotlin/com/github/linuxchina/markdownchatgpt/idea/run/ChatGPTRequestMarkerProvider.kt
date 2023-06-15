@@ -5,6 +5,7 @@ import com.github.linuxchina.markdownchatgpt.model.ChatCompletionRequest
 import com.github.linuxchina.markdownchatgpt.model.ChatCompletionResponse
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.execution.lineMarker.RunLineMarkerProvider
+import com.intellij.json.JsonLanguage
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.command.WriteCommandAction
@@ -19,6 +20,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import okhttp3.*
+import org.intellij.plugins.markdown.lang.psi.impl.MarkdownCodeFence
 import org.intellij.plugins.markdown.lang.psi.impl.MarkdownHeader
 import javax.swing.Icon
 
@@ -67,6 +69,21 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                         null,
                         GutterIconRenderer.Alignment.CENTER,
                         { "Response from ChatGPT" }
+                    )
+                }
+            } else if (psiElement is MarkdownCodeFence) {
+                val fenceLanguage = psiElement.fenceLanguage
+                if (fenceLanguage !=null && fenceLanguage.startsWith("json ") && fenceLanguage.contains(".functions")) {
+                    return LineMarkerInfo(
+                        psiElement,
+                        psiElement.textRange,
+                        chatGPTFunctionsIcon,
+                        { _: PsiElement? ->
+                            "ChatGPT functions"
+                        },
+                        null,
+                        GutterIconRenderer.Alignment.CENTER,
+                        { "ChatGPT functions" }
                     )
                 }
             }
