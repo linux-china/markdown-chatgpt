@@ -34,6 +34,7 @@ class ChatGPTRequest {
     var source: PsiElement? = null
     var responseContentOffset: Int = 0
     var responseContentEndOffset: Int = 0
+    var functions: String? = null
 
     fun convertBodyToMessages(): List<ChatMessage> {
         val messages = mutableListOf<ChatMessage>()
@@ -56,6 +57,15 @@ class ChatGPTRequest {
             userMsgContent = userMsgContent.replace(matchedText, "").trim()
             val assistantMsgContent = matchedText.replace("{.assistant}", "").trim()
             assistantMessages.add(ChatMessage.assistantMessage(assistantMsgContent))
+        }
+        // GPT functions
+        if (userMsgContent.contains("```${chatGPTFunctionsFenceLanguage}")) {
+            val offset = userMsgContent.indexOf("```${chatGPTFunctionsFenceLanguage}")
+            val endOffset = userMsgContent.indexOf("```", offset + 20)
+            if (endOffset > 0) {
+                functions = userMsgContent.substring(offset + 20, endOffset).trim()
+                userMsgContent = userMsgContent.substring(0, offset) + userMsgContent.substring(endOffset + 3)
+            }
         }
         // user message
         messages.add(ChatMessage.userMessage(userMsgContent))
