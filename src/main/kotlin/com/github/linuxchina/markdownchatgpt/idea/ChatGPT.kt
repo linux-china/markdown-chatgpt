@@ -9,3 +9,4 @@ val openAIIcon = IconLoader.getIcon("icons/openai-16.png", MarkdownGPTFileIconPr
 val chatGPTFunctionsIcon = AllIcons.Nodes.Function
 
 const val chatGPTResponseMarker = "\n##### ChatGPT"
+const val chatGPTFunctionsFenceLanguage = "json {.functions}"
