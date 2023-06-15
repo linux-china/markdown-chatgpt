@@ -65,6 +65,37 @@ public class UserService {
 ``` 
 ~~~
 
+### GPT functions support
+
+Please add code fence with `json {.functions}`.
+
+~~~markdown
+# Simple Java Example
+
+Give me a simple Java example, and compile the generated source code.
+
+```json {.functions}
+[
+    {
+      "name": "compile_java",
+      "description": "Compile Java source file or source code",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "java file name or source code"
+          }
+        },
+        "required": [
+          "source"
+        ]
+      }
+    }
+  ]
+```
+~~~
+
 <!-- Plugin description -->
 ChatGPT with Markdown is a JetBrains IDE plugin to help you talk with ChatGPT from Markdown file.
 
