@@ -1,11 +1,12 @@
 package com.github.linuxchina.markdownchatgpt.idea.run
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.linuxchina.markdownchatgpt.idea.*
 import com.github.linuxchina.markdownchatgpt.model.ChatCompletionRequest
 import com.github.linuxchina.markdownchatgpt.model.ChatCompletionResponse
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.execution.lineMarker.RunLineMarkerProvider
-import com.intellij.json.JsonLanguage
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.command.WriteCommandAction
@@ -30,7 +31,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
         this.readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
         this.writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
     }.build()
-    val gson = com.google.gson.Gson()
+    val objectMapper = ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     override fun getName(): String {
         return "ChatGPT"
@@ -73,7 +74,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                 }
             } else if (psiElement is MarkdownCodeFence) {
                 val fenceLanguage = psiElement.fenceLanguage
-                if (fenceLanguage !=null && fenceLanguage.startsWith("json ") && fenceLanguage.contains(".functions")) {
+                if (fenceLanguage != null && fenceLanguage == chatGPTFunctionsFenceLanguage) {
                     return LineMarkerInfo(
                         psiElement,
                         psiElement.textRange,
@@ -112,11 +113,14 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
         chatRequest.temperature = openAISettings.temperature
         chatRequest.n = openAISettings.n
         chatRequest.messages = mdChatRequest.convertBodyToMessages()
+        if (!mdChatRequest.functions.isNullOrEmpty()) {
+            chatRequest.functions = mdChatRequest.functions
+        }
         val request = Request.Builder()
             .url(openAISettings.url)
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer $openAIToken")
-            .post(RequestBody.create(MediaType.get("application/json"), gson.toJson(chatRequest)))
+            .post(RequestBody.create(MediaType.get("application/json"), objectMapper.writeValueAsString(chatRequest)))
             .build()
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Sending request to OpenAI") {
             var reply: String? = null
@@ -128,8 +132,24 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                     httpCall!!.execute().use { response ->
                         if (response.isSuccessful) {
                             val chatResponse =
-                                gson.fromJson(response.body()!!.string(), ChatCompletionResponse::class.java)
-                            reply = chatResponse.choices[0]?.message?.content ?: ""
+                                objectMapper.readValue(response.body()!!.string(), ChatCompletionResponse::class.java)
+                            val message = chatResponse.choices[0]?.message
+                            reply = message?.content ?: ""
+                            if (message?.functionCall != null) {
+                                val functionCall = message.functionCall!!
+                                val call = mutableMapOf<String, Any>()
+                                call["name"] = functionCall.name
+                                if (functionCall.arguments.startsWith("{")) {
+                                    call["arguments"] = objectMapper.readValue(functionCall.arguments, Map::class.java)
+                                } else if (functionCall.arguments.startsWith("[")) {
+                                    call["arguments"] = objectMapper.readValue(functionCall.arguments, List::class.java)
+                                } else {
+                                    call["arguments"] = functionCall.arguments
+                                }
+                                val jsonText = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(call)
+                                reply = "$reply\n```json {.function_call}\n$jsonText\n```\n"
+                            }
+
                         } else {
                             popupErrorBalloon(project, "Failed to talk to ChatGPT. Response code: ${response.code()}")
                         }
