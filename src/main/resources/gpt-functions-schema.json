@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GPT functions JSON Schema",
+  "description": "GPT functions JSON Schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "name",
+      "description",
+      "parameters"
+    ],
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "function name"
+      },
+      "description": {
+        "type": "string",
+        "description": "function description"
+      },
+      "parameters": {
+        "type": "object",
+        "description": "function parameters",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "parameter type",
+            "enum": [
+              "object"
+            ]
+          },
+          "required": {
+            "$ref": "#/definitions/stringArray"
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "$ref": "#/definitions/simpleTypes"
+                },
+                "description": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "simpleTypes": {
+      "enum": [
+        "array",
+        "boolean",
+        "integer",
+        "null",
+        "number",
+        "object",
+        "string"
+      ]
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    }
+  }
+}
