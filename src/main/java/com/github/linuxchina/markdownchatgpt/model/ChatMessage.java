@@ -9,6 +9,10 @@ import org.jetbrains.annotations.Nullable;
 public class ChatMessage {
     private String role;
     private String content;
+    /**
+     * the name of the author of this message
+     */
+    private String name;
 
     @JsonProperty("function_call")
     private FunctionCall functionCall;
@@ -35,6 +39,14 @@ public class ChatMessage {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public FunctionCall getFunctionCall() {
