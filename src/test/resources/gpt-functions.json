@@ -1,0 +1,42 @@
+[
+  {
+    "name": "send_email",
+    "description": "send email to receivers",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "emails": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "email address"
+          }
+        },
+        "subject": {
+          "type": "string",
+          "description": "email subject"
+        }
+      },
+      "required": [
+        "emails",
+        "subject"
+      ]
+    }
+  },
+  {
+    "name": "compile_java",
+    "description": "compile java code",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "xxx"
+      ],
+      "properties": {
+        "xxx": {
+          "type": "string",
+          "description": "xxx"
+        }
+      }
+    }
+  }
+]
