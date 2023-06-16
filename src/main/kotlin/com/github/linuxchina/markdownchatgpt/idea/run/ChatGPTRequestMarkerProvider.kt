@@ -123,7 +123,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
             .post(RequestBody.create(MediaType.get("application/json"), objectMapper.writeValueAsString(chatRequest)))
             .build()
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Sending request to OpenAI") {
-            var reply: String? = null
+            var reply: StringBuilder = StringBuilder()
             var startedAt = System.currentTimeMillis()
             var httpCall: Call? = null
             override fun run(indicator: ProgressIndicator) {
@@ -133,21 +133,33 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                         if (response.isSuccessful) {
                             val chatResponse =
                                 objectMapper.readValue(response.body()!!.string(), ChatCompletionResponse::class.java)
-                            val message = chatResponse.choices[0]?.message
-                            reply = message?.content ?: ""
-                            if (message?.functionCall != null) {
-                                val functionCall = message.functionCall!!
-                                val call = mutableMapOf<String, Any>()
-                                call["name"] = functionCall.name
-                                if (functionCall.arguments.startsWith("{")) {
-                                    call["arguments"] = objectMapper.readValue(functionCall.arguments, Map::class.java)
-                                } else if (functionCall.arguments.startsWith("[")) {
-                                    call["arguments"] = objectMapper.readValue(functionCall.arguments, List::class.java)
-                                } else {
-                                    call["arguments"] = functionCall.arguments
+                            val choices = chatResponse.choices
+                            if (choices != null && choices.isNotEmpty()) {
+                                for (choice in choices) {
+                                    val message = choice.message
+                                    if (message != null) {
+                                        if (message.content != null) {
+                                            reply.append(message.content + "\n")
+                                        }
+                                        if (message.functionCall != null) {
+                                            val functionCall = message.functionCall!!
+                                            val call = mutableMapOf<String, Any>()
+                                            call["name"] = functionCall.name
+                                            if (functionCall.arguments.startsWith("{")) {
+                                                call["arguments"] =
+                                                    objectMapper.readValue(functionCall.arguments, Map::class.java)
+                                            } else if (functionCall.arguments.startsWith("[")) {
+                                                call["arguments"] =
+                                                    objectMapper.readValue(functionCall.arguments, List::class.java)
+                                            } else {
+                                                call["arguments"] = functionCall.arguments
+                                            }
+                                            val jsonText =
+                                                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(call)
+                                            reply.append("\n```json {.function_call}\n$jsonText\n```\n")
+                                        }
+                                    }
                                 }
-                                val jsonText = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(call)
-                                reply = "$reply\n```json {.function_call}\n$jsonText\n```\n"
                             }
 
                         } else {
@@ -160,9 +172,9 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
             }
 
             override fun onSuccess() {
-                if (!reply.isNullOrEmpty()) {
+                if (reply.isNotEmpty()) {
                     WriteCommandAction.writeCommandAction(project, psiElement.containingFile).run<Exception> {
-                        updateChatGPTResponse(project, psiElement, mdChatRequest, reply!!)
+                        updateChatGPTResponse(project, psiElement, mdChatRequest, reply.toString())
                     }
                     val duration = System.currentTimeMillis() - startedAt
                     displayTextInBar(project, "ChatGPT query finished, execution time: $duration ms")
