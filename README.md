@@ -122,6 +122,7 @@ What's Kotlin language?
 
 * Standard Markdown format for ChatGPT: h1 is query name, and paragraph is query prompt.
 * Make a talk from Markdown: Click run button in the gutter to run ChatGPT query.
+* GPT functions support with JSON Schema completion
 * Support to load OpenAI token from environment variable `OPENAI_API_KEY`
 * Editor split support: one for prompt, another for response
 
