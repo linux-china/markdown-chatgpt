@@ -174,7 +174,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
             override fun onSuccess() {
                 if (reply.isNotEmpty()) {
                     WriteCommandAction.writeCommandAction(project, psiElement.containingFile).run<Exception> {
-                        updateChatGPTResponse(project, psiElement, mdChatRequest, reply.toString())
+                        updateChatGPTResponse(project, psiElement, mdChatRequest, reply.toString().trim())
                     }
                     val duration = System.currentTimeMillis() - startedAt
                     displayTextInBar(project, "ChatGPT query finished, execution time: $duration ms")
