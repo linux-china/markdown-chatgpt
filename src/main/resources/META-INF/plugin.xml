@@ -23,4 +23,9 @@
                            isLogByDefault="true"/>
     </extensions>
 
+    <extensions defaultExtensionNs="JavaScript.JsonSchema">
+        <ContentAwareSchemaFileProvider
+                implementation="com.github.linuxchina.markdownchatgpt.idea.json.GPTFunctionsJsonSchemaProviderFactory"/>
+    </extensions>
+
 </idea-plugin>
