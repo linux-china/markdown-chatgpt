@@ -98,7 +98,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
         val openAISettings = chatGPTDocument.getFrontMatter()
         val mdChatRequest = chatGPTDocument.findRequest(psiElement)!!
         displayTextInBar(project, "Sending request to OpenAI")
-        val openAIToken = openAISettings.getOpenAIToken()
+        val openAIToken = openAISettings.getOpenAIToken(project)
         if (openAIToken.isNullOrEmpty()) {
             popupErrorBalloon(
                 project,
@@ -163,7 +163,7 @@ class ChatGPTRequestMarkerProvider : RunLineMarkerProvider() {
                             }
 
                         } else {
-                            popupErrorBalloon(project, "Failed to talk to ChatGPT. Response code: ${response.code()}")
+                            popupErrorBalloon(project, "Failed to talk to ChatGPT. Response code: ${response.code()} \n ${response.body()!!.string()}")
                         }
                     }
                 } catch (e: Exception) {
