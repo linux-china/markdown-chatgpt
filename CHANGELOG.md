@@ -4,11 +4,12 @@
 
 ## [Unreleased]
 
-## [0.2.1] - 2023-06-16
+## [0.2.1] - 2023-06-19
 
 ### Added
 
 - Add JSON Schema for GPT functions json
+- Load OpenAI key from `.env` and `.env.properties` file
 
 ## [0.2.0] - 2023-06-15
 
