@@ -5,11 +5,16 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.childrenOfType
+import io.github.cdimascio.dotenv.Dotenv
 import org.intellij.plugins.markdown.lang.psi.impl.MarkdownHeader
 import org.yaml.snakeyaml.Yaml
+import java.util.*
+
 
 class OpenAISettings {
     var model = "gpt-3.5-turbo"
@@ -18,11 +23,32 @@ class OpenAISettings {
     var url = "https://api.openai.com/v1/chat/completions"
     var openaiApiKey: String? = null
 
-    fun getOpenAIToken(): String? {
+    fun getOpenAIToken(project: Project): String? {
         return if (openaiApiKey != null && openaiApiKey!!.length > 10) {
             openaiApiKey
         } else {
-            System.getenv("OPENAI_API_KEY")
+            var token: String? = null
+            val projectDir = project.guessProjectDir()
+            if (projectDir != null) {
+                val dotEnvFile = projectDir.findChild(".env")
+                if (dotEnvFile != null) {
+                    val dotEnv =
+                        Dotenv.configure().directory(projectDir.path).ignoreIfMalformed().ignoreIfMissing().load()
+                    token = dotEnv["OPENAI_API_KEY"]
+                }
+                if (token == null) {
+                    val envPropertiesFile = projectDir.findChild("env.properties")
+                    if (envPropertiesFile != null) {
+                        val properties = Properties()
+                        properties.load(envPropertiesFile.inputStream)
+                        token = properties.getProperty("openai.api.key")
+                    }
+                }
+            }
+            if (token.isNullOrEmpty()) {
+                token = System.getenv("OPENAI_API_KEY");
+            }
+            return token
         }
     }
 }
