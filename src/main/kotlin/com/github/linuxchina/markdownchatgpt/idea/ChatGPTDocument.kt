@@ -37,7 +37,7 @@ class OpenAISettings {
                     token = dotEnv["OPENAI_API_KEY"]
                 }
                 if (token == null) {
-                    val envPropertiesFile = projectDir.findChild("env.properties")
+                    val envPropertiesFile = projectDir.findChild(".env.properties")
                     if (envPropertiesFile != null) {
                         val properties = Properties()
                         properties.load(envPropertiesFile.inputStream)
