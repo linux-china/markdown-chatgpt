@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2023-12-10
+
+### Added
+
+- Compatible with JetBrains IDE 2023.3
+
 ## [0.2.2] - 2023-19-29
 
 ### Added
