@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [0.2.5] - 2023-07-21
+
+### Added
+
+- Update default model to `gpt-4o-mini`
+- Compatible with JetBrains IDE 2024.2
+
 ## [0.2.4] - 2023-04-20
 
 ### Added
