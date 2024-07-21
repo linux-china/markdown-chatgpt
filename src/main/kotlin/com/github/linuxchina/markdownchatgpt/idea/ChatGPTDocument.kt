@@ -17,7 +17,7 @@ import java.util.*
 
 
 class OpenAISettings {
-    var model = "gpt-3.5-turbo"
+    var model = "gpt-4o-mini"
     var temperature = 1.0
     var n = 1
     var url = "https://api.openai.com/v1/chat/completions"
